@@ -9,14 +9,17 @@
 const int ciAlphabet = 26;
 const QChar chStart='a';
 const QChar chFinish='z';
+const char chSignStart=chStart.toLatin1();
+const char chSignFinish=chFinish.toLatin1();
 const int ciCountRepeats = chFinish.unicode() - chStart.unicode();
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow),
     _iGoodTry(0),
     _iNDSTry(0),
-    _iDollarTry(0)
+    _iDollarTry(0),
+    ui(new Ui::MainWindow)
+
 {
     ui->setupUi(this);
     setInitNetValue();
@@ -73,7 +76,7 @@ void MainWindow::on_pushButton_3_clicked()
 void MainWindow::setInitNetValue()
 {
     int count=0;
-    for(char sign = chStart; sign <= chFinish;sign++)
+    for(char sign = chSignStart; sign <= chSignFinish;sign++)
     {
         fromPinkyToBrain.push_back(new neuron(sign));
         count++;
@@ -94,7 +97,7 @@ void MainWindow::on_pbRecognize_clicked()
 {
     vViewImage();
     int count=0;
-    for(unsigned char sign = chStart ; sign<= chFinish ;sign++)
+    for(unsigned char sign = chSignStart ; sign<= chSignFinish ;sign++)
     {
         fromPinkyToBrain[count]->setPathToFile(static_cast<QString>(_strPathTemp));
         if(fromPinkyToBrain[count]->checkValidSigm())   //check this
@@ -135,7 +138,7 @@ void MainWindow::on_pbTeach_clicked()
         dataDir.setNameFilters(filters);
          _listPathFiles.clear();
         QChar upLimitNeiron( chFinish ), downLimitNeiron( chStart ), upLimitSign( chFinish ), downLimitSign( chStart );
-        QChar sign;
+        char sign;
         if(ui->chbStudyNeiron->isChecked()){
           upLimitNeiron =      ui->cbNeiron->currentText().toStdString().c_str()[0];
           downLimitNeiron = ui->cbNeiron->currentText().toStdString().c_str()[0];
@@ -146,8 +149,9 @@ void MainWindow::on_pbTeach_clicked()
           downLimitSign = ui->cbSign->currentText().toStdString().c_str()[0];
         }
 
-
-        for(sign = downLimitSign; sign <= upLimitSign; sign++)       //full list of files
+        char chDownLimitSign=downLimitSign.toLatin1();
+        char chUpLimitSign=upLimitSign.toLatin1();
+        for(sign = chDownLimitSign; sign <= chUpLimitSign; sign++)       //full list of files
         {
             QDir dir(dataDir);
             if(dir.cd(path+'/'+sign)){
@@ -172,11 +176,13 @@ void MainWindow::on_pbTeach_clicked()
 
         qDebug() <<"Start: "<< time.toString()<<endl;
 
+        char chUpLimitNeiron=upLimitNeiron.toLatin1();
+        char chDownLimitNeiron=downLimitNeiron.toLatin1();
         for(int a = 0; a < ui->spbRounds->value(); ++a){
-          for(sign = downLimitNeiron; sign<=upLimitNeiron; sign++)      //study
+          for(sign = chDownLimitNeiron; sign<=chUpLimitNeiron; sign++)      //study
           {
              // qDebug()<<"================== Neiron:"<<sign<<"========"<<endl;
-              int currentSign = sign - chStart;
+              int currentSign = sign - chSignStart;
             //  #pragma omp parallel for private(fromPinkyToBrain)
               for(int i = 0; i < cnt; ++i)
               {

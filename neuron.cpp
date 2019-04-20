@@ -51,7 +51,7 @@ long neuron::calcTresholdValue()
       image = image.scaled(32,32);
       quint8 const* line =image.scanLine(0);
       int stride=image.bytesPerLine();
-      int index;
+      int index=0;
       for(int y = 0; y<ciHeight; y++, line += stride)
       {
           quint8 const* pix=line;
