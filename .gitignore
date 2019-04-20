@@ -1,0 +1,16 @@
+
+.qmake.stash
+debug/main.o
+debug/mainwindow.o
+debug/Mark_1.exe
+debug/moc_mainwindow.cpp
+debug/moc_mainwindow.o
+debug/moc_predefs.h
+debug/neuron.o
+ui_mainwindow.h
+Mark_1.pro.user.b922238
+Mark_1.pro.user.fee947c.20
+Mark_1.pro.user
+Makefile.Debug
+Makefile.Release
+Makefile

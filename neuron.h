@@ -11,6 +11,8 @@ class neuron
     QVector <unsigned char> _ucVectSensors;
     QVector <int> _iVectWeight;
     QString _pathToFile;
+    long long _llThresholdSum;
+    int            _iRunCnt;
     void setWeightAR();
     void sancionsOurKrimea(bool increase);
 
@@ -20,9 +22,11 @@ public:
     long calcTresholdValue();
     void setPathToFile(QString);
     long getThreshold();
+    long getThresholdAvg();
+    bool saveToFile(QString );
 
 
-    void study(char);
+    int study(char);
 
 
 };

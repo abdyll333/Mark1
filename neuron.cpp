@@ -7,84 +7,66 @@
 #include <windows.h>
 #include <omp.h>
 
-
-
-
-
-const QPoint cqpSizeInputPicture=QPoint(1200,900);
+const int ciWidth = 32;
+const int ciHeight = 32;
+const QPoint cqpSizeInputPicture=QPoint(ciWidth, ciHeight);
 
 
 neuron::neuron(char sign):
     neuronSign(sign),
-    _lThreshold(3000000)
+    _lThreshold(100000),
+    _llThresholdSum(0),
+    _iRunCnt(0)
 {
     int nProcs=omp_get_max_threads();
     omp_set_num_threads(nProcs);
-    _ucVectSensors.resize(1200*900);
-    _iVectWeight.resize(1200*900);
+    _ucVectSensors.resize(ciWidth * ciHeight);
+    _iVectWeight.resize(ciWidth * ciHeight);
     setWeightAR();
-
 }
-
-
-
-
 
 bool neuron::checkValidSigm()
 {
     long lSigmActiveLayer = calcTresholdValue();
-    //qDebug()<<"Summ:"<<lSigmActiveLayer<<endl;
+    _llThresholdSum += lSigmActiveLayer;
+    ++_iRunCnt;
+   // qDebug()<<"Summ:"<<lSigmActiveLayer;//<<endl;
     //qDebug()<<"My neron sign:"<<static_cast<char>(neuronSign);
     if(lSigmActiveLayer>=_lThreshold)
-    {
-        qDebug()<<"Это буква :"<<neuronSign<<endl;
         return true;
-
-    }
     return false;
 }
 
-
-
 long neuron::calcTresholdValue()
 {
-
     long lTreshold=0;
+    QImage image;
 
-    QImage image(_pathToFile);
-
-
-    if(image.load(_pathToFile) && (image.width()==cqpSizeInputPicture.x() && image.height()==cqpSizeInputPicture.y()))
+    if(!image.load(_pathToFile))
     {
-
-        //image = image.convertToFormat(QImage::Format_Mono);
-
-        quint8 const* line =image.scanLine(0);
-        int stride=image.bytesPerLine();
-        int height=image.height();
-        int width=image.width();
-        for(int y=0;y<height;y++,line+=stride)
-        {
-            quint8 const* pix=line;
-            for(int x=0;x<width;x++,pix+=4){
-                if((pix[0]!=0xff) && (pix[1]!=0xff) && (pix[2]!=0xff))
-                {
-                    _ucVectSensors[y*width+x]=1;
-                    lTreshold+=_iVectWeight[y*width+x];
-                }
-                else {
-                    _ucVectSensors[y*width+x]=0;
-                }
-
-            }
-        }
-
-
-        //qDebug()<<"Weight summ"<<lTreshold<<endl;
+       qDebug()<<"Kosyak"<<endl;
     }
     else
-        qDebug()<<"Kosyak"<<endl;
-
+    {
+      image = image.scaled(32,32);
+      quint8 const* line =image.scanLine(0);
+      int stride=image.bytesPerLine();
+      int index;
+      for(int y = 0; y<ciHeight; y++, line += stride)
+      {
+          quint8 const* pix=line;
+          for(int x=0; x < ciWidth; x++, pix += 4, index = y * ciWidth + x ){
+              if((pix[0]!=0xff) && (pix[1]!=0xff) && (pix[2]!=0xff))
+              {
+                  _ucVectSensors[ index ]=1;
+                  lTreshold+=_iVectWeight[ index ];
+              }
+              else {
+                  _ucVectSensors[ index ]=0;
+              }
+          }
+      }
+    }
     return lTreshold;
 }
 
@@ -100,53 +82,70 @@ long neuron::getThreshold()
     return _lThreshold;
 }
 
+long neuron::getThresholdAvg()
+{
+    return (_llThresholdSum*1.0)/_iRunCnt;
+}
+
 
 void neuron::setWeightAR()
 {
     srand(time_t(nullptr));
-   // Sleep(neuronSign/10+5);
-    int size=1200*900;
+    int size=ciWidth * ciHeight;
+
     #pragma omp parallel for
     for(int i=0;i<size;i++)
-    {         
-        _iVectWeight[i]=1+rand()%35;
+    {
+        _iVectWeight[i]= 1+static_cast<int>(sqrt((rand()+rand()+rand())/3.)*rand())%100;
     }
 
 }
 
-
-
-void neuron::study(char sign)
-{    
-    bool repeatSt;
-  //  do{
-        bool cal=checkValidSigm();
-        repeatSt = false;
-        if(sign!=neuronSign && cal)
-        {
-            sancionsOurKrimea(false);
-            qDebug()<<"Dollar x2"<<endl;
-            repeatSt = true;
-        }
-        else if(sign==neuronSign && !cal)
-        {
-           sancionsOurKrimea(true);
-           qDebug()<<"NDS x2"<<endl;
-           repeatSt = true;
-        }
-        else
-        {
-           qDebug()<<"GOOOOOOOOOOOOOD"<<endl;
-        }
-   // }
- //   while(repeatSt);
+int neuron::study(char sign)
+{
+    bool cal=checkValidSigm();
+    if(sign!=neuronSign && cal)
+    {
+        sancionsOurKrimea(false);
+        return -1;
+    }
+    else if(sign==neuronSign && !cal)
+    {
+       sancionsOurKrimea(true);
+         return -2;
+    }
+    else
+    {
+       return 0;
+    }
 }
 
 
 void neuron::sancionsOurKrimea(bool increase)
 {
-    int size=_iVectWeight.size(),delta=increase?5:-5;
+    int size = _iVectWeight.size(), delta=increase?1:-1;
     for(int i=0;i<size;i++)
        if(_ucVectSensors[i])
             _iVectWeight[i]+=delta;
+}
+
+bool neuron::saveToFile(QString  path)
+{
+    QImage *image(new QImage(ciWidth, ciHeight , QImage::Format_RGB32));
+    image->fill(Qt::white);
+  int i, j, max(_iVectWeight[0]), sz(ciWidth * ciHeight);
+  for(i=1; i < sz; ++i )
+    if(max < _iVectWeight[i])
+      max = _iVectWeight[i];
+
+  qDebug() << " max weight " << max;
+   //#pragma omp parallel for
+    for( i = 0; i < ciWidth; ++i)
+      for( j = 0; j <  ciHeight; ++j)
+    {
+        int clr = 255 -  _iVectWeight[ j * ciWidth + i ] * 255 / max;
+        image->setPixel(i ,j ,QColor(clr,clr,clr).rgb());
+    }
+
+    return image->save(path);
 }
