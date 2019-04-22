@@ -14,7 +14,7 @@ const QPoint cqpSizeInputPicture=QPoint(ciWidth, ciHeight);
 
 neuron::neuron(char sign):
     neuronSign(sign),
-    _lThreshold(100000),
+    _lThreshold(50000),
     _llThresholdSum(0),
     _iRunCnt(0)
 {
@@ -51,6 +51,7 @@ long neuron::calcTresholdValue()
       image = image.scaled(32,32);
       quint8 const* line =image.scanLine(0);
       int stride=image.bytesPerLine();
+      //qDebug()<<"stride="<<stride<<endl;
       int index=0;
       for(int y = 0; y<ciHeight; y++, line += stride)
       {

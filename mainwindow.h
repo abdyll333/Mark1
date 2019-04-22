@@ -53,7 +53,7 @@ private:
 
     void setInitNetValue();
     void vViewImage();
-    void vSave(QString , QString );
+    void vSave(char sign, QString , QString );
     Ui::MainWindow *ui;
 
 signals:
