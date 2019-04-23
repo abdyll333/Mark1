@@ -223,7 +223,11 @@ void MainWindow::vSave(char sign,QString dirName, QString fileName)
   QDir dir(rrr);
   dir.mkdir(dirName);
   dir.cd(dirName);
+<<<<<<< HEAD
   qDebug() << (fromPinkyToBrain[sign-chSignStart]->savePictToFile(dir.absoluteFilePath(fileName+".png")) ? "save ok" : "failed");
+=======
+  qDebug() << (fromPinkyToBrain[sign-chSignStart]->saveToFile(dir.absoluteFilePath(fileName+".png")) ? "save ok" : "failed");
+>>>>>>> 51c943add91101e131e298b10dfb09bbf06d7dc3
 }
 
 void MainWindow::on_pushButton_clicked()

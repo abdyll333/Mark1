@@ -1,3 +1,3 @@
 # Mark1
-nural network project
+neural network project
 Test project
