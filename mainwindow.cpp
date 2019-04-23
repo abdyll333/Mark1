@@ -6,7 +6,6 @@
 #include <QTime>
 
 
-const int ciAlphabet = 26;
 const QChar chStart='a';
 const QChar chFinish='z';
 const char chSignStart=chStart.toLatin1();
@@ -28,12 +27,13 @@ MainWindow::MainWindow(QWidget *parent) :
     omp_set_num_threads(nProcs);
     qDebug()<<omp_get_num_threads()<<endl;
 
-    for(int i = 0 ; i < ciCountRepeats ; ++i)  ////todo переделать под многоязычность
+    for(int i = 0 ; i <= ciCountRepeats ; ++i)  ////todo переделать под многоязычность
     {
-      ui->cbNeiron->insertItem( 0, QString(QChar(chStart.unicode()+i)));
-      ui->cbSign->insertItem( 0, QString(QChar(chStart.unicode()+i)));
+      ui->cbNeiron->addItem(QString(QChar(chStart.unicode()+i)));
+      ui->cbSign->addItem(QString(QChar(chStart.unicode()+i)));
     }
 
+    ui->lePath->setText("./Img");
     ui->cbNeiron->setCurrentIndex(0);
     ui->cbSign->setCurrentIndex(0);
     ui->pbGood->setValue(0);
@@ -137,21 +137,19 @@ void MainWindow::on_pbTeach_clicked()
         filters << "*.png" << "*.jpg" << "*.bmp";
         dataDir.setNameFilters(filters);
          _listPathFiles.clear();
-        QChar upLimitNeiron( chFinish ), downLimitNeiron( chStart ), upLimitSign( chFinish ), downLimitSign( chStart );
+        char upLimitNeiron( chSignFinish ), downLimitNeiron( chSignStart ), upLimitSign( chSignFinish ), downLimitSign( chSignStart );
         char sign;
         if(ui->chbStudyNeiron->isChecked()){
-          upLimitNeiron =      ui->cbNeiron->currentText().toStdString().c_str()[0];
+          upLimitNeiron =   ui->cbNeiron->currentText().toStdString().c_str()[0];
           downLimitNeiron = ui->cbNeiron->currentText().toStdString().c_str()[0];
-        }
-
+        }    
         if(ui->chbStudySign->isChecked()){
-          upLimitSign =      ui->cbSign->currentText().toStdString().c_str()[0];
+          upLimitSign =   ui->cbSign->currentText().toStdString().c_str()[0];
           downLimitSign = ui->cbSign->currentText().toStdString().c_str()[0];
         }
 
-        char chDownLimitSign=downLimitSign.toLatin1();
-        char chUpLimitSign=upLimitSign.toLatin1();
-        for(sign = chDownLimitSign; sign <= chUpLimitSign; sign++)       //full list of files
+
+        for(sign = downLimitSign; sign <= upLimitSign; sign++)       //full list of files
         {
             QDir dir(dataDir);
             if(dir.cd(path+'/'+sign)){
@@ -176,31 +174,28 @@ void MainWindow::on_pbTeach_clicked()
 
         qDebug() <<"Start: "<< time.toString()<<endl;
 
-        char chUpLimitNeiron=upLimitNeiron.toLatin1();
-        char chDownLimitNeiron=downLimitNeiron.toLatin1();
         for(int a = 0; a < ui->spbRounds->value(); ++a){
-          for(sign = chDownLimitNeiron; sign<=chUpLimitNeiron; sign++)      //study
+          for(sign = downLimitNeiron; sign<=upLimitNeiron; sign++)      //study
           {
-             // qDebug()<<"================== Neiron:"<<sign<<"========"<<endl;
               int currentSign = sign - chSignStart;
             //  #pragma omp parallel for private(fromPinkyToBrain)
               for(int i = 0; i < cnt; ++i)
               {
-                  //qDebug()<<_listPathFile[i]<<endl;
+
                   fromPinkyToBrain[currentSign]->setPathToFile(static_cast<QString>(_listPathFiles[i].fileName));
                   switch(fromPinkyToBrain[currentSign]->study( _listPathFiles[i].sign )){
                     case -1:    _iDollarTry++;
-                                    //emit(sigUpdtDollar());
+
                     break;
                     case -2:    _iNDSTry++;
-                                   // emit(sigUpdtNDS());
+
                     break;
                     default:   _iGoodTry++;
-                                   // emit(sigUpdtGood());
+
                   }
                }
 
-             vSave(QChar(sign).toUpper(), QString::number(a+1));
+             vSave(sign, QChar(sign).toUpper(), QString::number(a+1));
 
              qDebug() <<"Time: "<< time.secsTo(QTime::currentTime())<<"secs; Avg sum: " << fromPinkyToBrain[currentSign]->getThresholdAvg()<<endl;
              time = QTime::currentTime();
@@ -219,16 +214,16 @@ void MainWindow::on_pbSave_clicked()
    /* dialog.setFileMode(QFileDialog::AnyFile);
     dialog.setDirectory(qApp->applicationDirPath()+"/../");*/
     QString fileName(dialog.getSaveFileName(this, tr("Select file to save"),rrr,tr("Images (*.png )")));
-    qDebug() << (fromPinkyToBrain[ui->cbNeiron->currentIndex()]->saveToFile(fileName) ? "save ok" : "failed");
+    qDebug() << (fromPinkyToBrain[ui->cbNeiron->currentIndex()]->savePictToFile(fileName) ? "save ok" : "failed");
 }
 
-void MainWindow::vSave(QString dirName, QString fileName)
+void MainWindow::vSave(char sign,QString dirName, QString fileName)
 {
   QString rrr(qApp->applicationDirPath()+"/../Weights/");   //+fileName+".png");
   QDir dir(rrr);
   dir.mkdir(dirName);
   dir.cd(dirName);
-  qDebug() << (fromPinkyToBrain[ui->cbNeiron->currentIndex()]->saveToFile(dir.absoluteFilePath(fileName+".png")) ? "save ok" : "failed");
+  qDebug() << (fromPinkyToBrain[sign-chSignStart]->savePictToFile(dir.absoluteFilePath(fileName+".png")) ? "save ok" : "failed");
 }
 
 void MainWindow::on_pushButton_clicked()

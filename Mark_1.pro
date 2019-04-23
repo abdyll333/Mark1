@@ -38,6 +38,7 @@ HEADERS += \
 
 FORMS += \
         mainwindow.ui \
+    SaveDataFiles.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

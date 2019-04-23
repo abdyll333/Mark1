@@ -6,15 +6,16 @@
 #include <cmath>
 #include <windows.h>
 #include <omp.h>
+#include <QFile>
 
 const int ciWidth = 32;
 const int ciHeight = 32;
-const QPoint cqpSizeInputPicture=QPoint(ciWidth, ciHeight);
+
 
 
 neuron::neuron(char sign):
     neuronSign(sign),
-    _lThreshold(100000),
+    _lThreshold(50000),
     _llThresholdSum(0),
     _iRunCnt(0)
 {
@@ -51,6 +52,7 @@ long neuron::calcTresholdValue()
       image = image.scaled(32,32);
       quint8 const* line =image.scanLine(0);
       int stride=image.bytesPerLine();
+      //qDebug()<<"stride="<<stride<<endl;
       int index=0;
       for(int y = 0; y<ciHeight; y++, line += stride)
       {
@@ -129,7 +131,7 @@ void neuron::sancionsOurKrimea(bool increase)
             _iVectWeight[i]+=delta;
 }
 
-bool neuron::saveToFile(QString  path)
+bool neuron::savePictToFile(QString  path)
 {
     QImage *image(new QImage(ciWidth, ciHeight , QImage::Format_RGB32));
     image->fill(Qt::white);
@@ -143,9 +145,39 @@ bool neuron::saveToFile(QString  path)
     for( i = 0; i < ciWidth; ++i)
       for( j = 0; j <  ciHeight; ++j)
     {
-        int clr = 255 -  _iVectWeight[ j * ciWidth + i ] * 255 / max;
+        int clr = 255 -  _iVectWeight[ j * ciWidth + i ] * 255.0 / max;
         image->setPixel(i ,j ,QColor(clr,clr,clr).rgb());
     }
 
     return image->save(path);
 }
+
+
+void neuron::saveWeightFile(QString filePath)
+{
+    QString strBuff;
+
+    for(int i=0;i<_iVectWeight.size();i++)
+    {
+        strBuff.append(_iVectWeight[i]);
+        strBuff.append(";");
+        if(i%ciWidth==0)
+           strBuff.append("\n");
+    }
+
+
+    QString filename=filePath+"/WeightFile_"+neuronSign+".csv";
+    QFile fileWeight(filename);
+    if (!fileWeight.open(QFile::WriteOnly|QFile::Truncate))
+    {
+        qDebug("Error opening file");
+    }
+    else
+    {
+        fileWeight.write(strBuff.toStdString().c_str(), strBuff.length());
+        fileWeight.close();
+    }
+    return;
+
+}
+

@@ -23,7 +23,8 @@ public:
     void setPathToFile(QString);
     long getThreshold();
     long getThresholdAvg();
-    bool saveToFile(QString );
+    bool savePictToFile(QString );
+    void saveWeightFile(QString filePath);
 
 
     int study(char);
