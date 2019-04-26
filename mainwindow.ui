@@ -7,210 +7,191 @@
     <x>0</x>
     <y>0</y>
     <width>725</width>
-    <height>681</height>
+    <height>783</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Модель однослойного  перцептрона</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QGroupBox" name="groupBox">
-    <property name="geometry">
-     <rect>
-      <x>140</x>
-      <y>390</y>
-      <width>439</width>
-      <height>131</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>Режим</string>
-    </property>
-    <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="0">
-      <widget class="QPushButton" name="pbRecognize">
-       <property name="text">
-        <string>Распознавание</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1" colspan="2">
-      <widget class="QPushButton" name="pbTeach">
-       <property name="text">
-        <string>Обучение</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="3" colspan="2">
-      <widget class="QPushButton" name="pushButton_3">
-       <property name="text">
-        <string>Закрыть</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QCheckBox" name="chbStudyNeiron">
-       <property name="text">
-        <string>Тренировать нейрон</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QComboBox" name="cbNeiron"/>
-     </item>
-     <item row="1" column="2" colspan="2">
-      <widget class="QCheckBox" name="chbStudySign">
-       <property name="text">
-        <string>Обучение по букве</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="4">
-      <widget class="QComboBox" name="cbSign"/>
-     </item>
-     <item row="2" column="4">
-      <widget class="QSpinBox" name="spbRounds"/>
-     </item>
-     <item row="2" column="0">
-      <widget class="QPushButton" name="pbSave">
-       <property name="text">
-        <string>Сохранить</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="2" colspan="2">
-      <widget class="QLabel" name="label_6">
-       <property name="text">
-        <string>Число прогонов</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QPushButton" name="pushButton">
-       <property name="text">
-        <string>PushButton</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>180</x>
-      <y>10</y>
-      <width>361</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>16</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>Модель однослойного  перцептрона</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_2">
-    <property name="geometry">
-     <rect>
-      <x>170</x>
-      <y>130</y>
-      <width>361</width>
-      <height>231</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="pixmap">
-     <pixmap>image_model.png</pixmap>
-    </property>
-   </widget>
-   <widget class="QGroupBox" name="groupBox_2">
-    <property name="geometry">
-     <rect>
-      <x>140</x>
-      <y>510</y>
-      <width>441</width>
-      <height>116</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string/>
-    </property>
-    <layout class="QGridLayout" name="gridLayout_2">
-     <item row="0" column="0">
-      <widget class="QLabel" name="label_3">
-       <property name="text">
-        <string>Процент правильного распознования</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0" colspan="2">
-      <widget class="QLabel" name="label_4">
-       <property name="text">
-        <string>Не определил свою букву</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="0" colspan="3">
-      <widget class="QLabel" name="label_5">
-       <property name="text">
-        <string>Определил другую букву как свою</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="3">
-      <widget class="QProgressBar" name="pbDollar">
-       <property name="value">
-        <number>24</number>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="3">
-      <widget class="QProgressBar" name="pbNDS">
-       <property name="value">
-        <number>24</number>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="3">
-      <widget class="QProgressBar" name="pbGood">
-       <property name="value">
-        <number>24</number>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
-   <widget class="QLineEdit" name="lePath">
-    <property name="geometry">
-     <rect>
-      <x>170</x>
-      <y>60</y>
-      <width>361</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="chbRememberPath">
-    <property name="geometry">
-     <rect>
-      <x>240</x>
-      <y>90</y>
-      <width>211</width>
-      <height>19</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Запомнить выбор папки</string>
-    </property>
-   </widget>
+   <layout class="QGridLayout" name="gridLayout_4">
+    <item row="1" column="0">
+     <widget class="QLabel" name="label_2">
+      <property name="text">
+       <string/>
+      </property>
+      <property name="pixmap">
+       <pixmap>image_model.png</pixmap>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1" rowspan="4">
+     <widget class="QTableView" name="tableView"/>
+    </item>
+    <item row="2" column="0">
+     <widget class="QGroupBox" name="groupBox_3">
+      <property name="title">
+       <string>Опции</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="0" colspan="2">
+        <widget class="QCheckBox" name="chbStudyNeiron">
+         <property name="text">
+          <string>Тренировать нейрон</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QComboBox" name="cbNeiron"/>
+       </item>
+       <item row="0" column="3">
+        <widget class="QCheckBox" name="chbStudySign">
+         <property name="text">
+          <string>Обучение по букве</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="4">
+        <widget class="QComboBox" name="cbSign"/>
+       </item>
+       <item row="1" column="0" colspan="5">
+        <widget class="QLineEdit" name="lePath">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>Число прогонов:</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1" colspan="2">
+        <widget class="QSpinBox" name="spbRounds"/>
+       </item>
+       <item row="2" column="3" colspan="2">
+        <widget class="QCheckBox" name="chbRememberPath">
+         <property name="text">
+          <string>Запомнить выбор папки</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+      <zorder>chbStudySign</zorder>
+      <zorder>cbNeiron</zorder>
+      <zorder>chbStudyNeiron</zorder>
+      <zorder>cbSign</zorder>
+      <zorder>label_6</zorder>
+      <zorder>spbRounds</zorder>
+      <zorder>lePath</zorder>
+      <zorder>chbRememberPath</zorder>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <widget class="QGroupBox" name="groupBox">
+      <property name="title">
+       <string>Режим</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="0">
+        <widget class="QPushButton" name="pbRecognize">
+         <property name="text">
+          <string>Распознать</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QPushButton" name="pbTeach">
+         <property name="text">
+          <string>Обучить</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QPushButton" name="pushButton_3">
+         <property name="text">
+          <string>Закрыть</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QPushButton" name="pbSave">
+         <property name="text">
+          <string>Сохранить</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QPushButton" name="pushButton">
+         <property name="text">
+          <string>Остановить</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="4" column="0">
+     <widget class="QGroupBox" name="groupBox_2">
+      <property name="title">
+       <string/>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Подготовка картинок</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>Прогресс обучения/распознования</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QProgressBar" name="pbPicts">
+         <property name="value">
+          <number>24</number>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QProgressBar" name="pbStudy_Rec">
+         <property name="value">
+          <number>24</number>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="0" column="0" colspan="2">
+     <widget class="QLabel" name="label">
+      <property name="font">
+       <font>
+        <pointsize>16</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Модель однослойного  перцептрона</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -218,7 +199,7 @@
      <x>0</x>
      <y>0</y>
      <width>725</width>
-     <height>21</height>
+     <height>20</height>
     </rect>
    </property>
   </widget>

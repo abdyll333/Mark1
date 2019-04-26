@@ -30,11 +30,14 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
         neuron.cpp \
+    SaveDataFiles.cpp
 
 
 HEADERS += \
         mainwindow.h \
         neuron.h \
+    SaveDataFiles.h \
+    MarkConst.h
 
 FORMS += \
         mainwindow.ui \
