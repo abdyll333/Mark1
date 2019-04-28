@@ -19,11 +19,10 @@ class neuron : public QObject
     int            _iGood;
     int            _iNDS;
     int            _iDollar;
-    bool         _bDataBusy;
     bool         _bStudied;
-    bool         _bStopped;
     dataPtr    _pStudyData;
     const QImage*  _opImage;
+    enThreadStates _enState;
     void setWeightAR();
     void sancionsOurKrimea(bool increase);
 
@@ -34,7 +33,8 @@ public slots:
 
 signals:
     void resultReady();
-    void resultStoped();
+    void resultStopped();
+    void threadIsStopping(int);
     void recognReady( bool , long);
 
 public:
@@ -49,7 +49,8 @@ public:
     bool savePictToFile(QString );
     void saveWeightFile(QString filePath);
     void loadWeightsFile();
-    int getRunCount() const { return _iRunCnt; }
+    int  getRunCount() const { return _iRunCnt; }
+    enThreadStates getNeironState() const {return _enState; }
 
     void setStudyDataPtr(const dataPtr ptr);
 
@@ -58,7 +59,6 @@ public:
     inline int  getLastStudyNDSCnt() const  {return _iNDS;}         // не распознал свой символ
 
     void study(char);
-    void studyWithInfo(const int);
     inline char getNeuronSign() const { return neuronSign; }
 
 };

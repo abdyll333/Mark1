@@ -1,9 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QFileDialog>
-#include <QDebug>
 #include <omp.h>
 #include <QTime>
+#include <QMessageBox>
 
 void Controller::handleResults()
 {
@@ -34,50 +34,55 @@ void  Controller::sltResultsRecogn(bool res , long sum)
 void Controller::stopE()
 {
   worker->stopCalc();
-  workerThread.wait(100);
+  workerThread.wait(10);
   workerThread.start();
 }
 
 void ZipPicture::sltMakeData(char signUp, char signDown) //todo чекать количество файлов на переполнение буфера
 {
-  qDebug() <<"Zip got it" << endl;
-  QDir dataDir(_strWorkDirectoryPath);
-  QStringList filters;
-  filters << "*.png" << "*.jpg" << "*.bmp";
-  dataDir.setNameFilters(filters);
-  if(_pDataList && !_strWorkDirectoryPath.isEmpty())
+  if(_enState ==enIdling)
   {
-   _pDataList->clear();
-   int cnt(0), size(0);
-
-#pragma omp parallel for
-for(int sign = signDown; sign <= signUp; sign++)       //full list of files
-{
-    QDir dir(dataDir);
-    if(dir.cd(_strWorkDirectoryPath+'/'+sign)){
-      size += dir.entryList(QDir::Files).size()  ;
-    }
-}
-
-   float progr(100.f / size);
-
-    #pragma omp parallel for
-    for(int sign = signDown; sign <= signUp; sign++)       //full list of files
-    {
-        QDir dir(dataDir);
-        if(dir.cd(_strWorkDirectoryPath+'/'+sign)){
-          foreach (QString fileinf, dir.entryList(QDir::Files)) {
-                   _pDataList->append( studyData (sign, dir.absoluteFilePath(fileinf) ) );
-                   ++cnt;
-               emit  updateProgress(cnt * progr+1);
-          }
+      _enState = enWorked;
+      qDebug() <<"Zip got it" << endl;
+      QDir dataDir(_strWorkDirectoryPath);
+      QStringList filters;
+      filters << "*.png" << "*.jpg" << "*.bmp";
+      dataDir.setNameFilters(filters);
+      if(_pDataList && !_strWorkDirectoryPath.isEmpty())
+      {
+       _pDataList->clear();
+       int cnt(0), size(0);
+    
+        #pragma omp parallel for
+        for(char sign = signDown; sign <= signUp; sign++)       //full list of files
+        {
+            QDir dir(dataDir);
+            if(dir.cd(_strWorkDirectoryPath+'/'+sign)){
+              size += dir.entryList(QDir::Files).size()  ;
+            }
         }
-    }
-     qDebug() <<"files cnt" <<size <<endl;
-    emit resReady(true);
+
+       float progr(100.f / size);
+    
+        #pragma omp parallel for
+        for(char sign = signDown; sign <= signUp; sign++)       //full list of files
+        {
+            QDir dir(dataDir);
+            if(dir.cd(_strWorkDirectoryPath+'/'+sign)){
+              foreach (QString fileinf, dir.entryList(QDir::Files)) {
+                       _pDataList->append( studyData (sign, dir.absoluteFilePath(fileinf) ) );
+                       ++cnt;
+                   emit  updateProgress(static_cast<int>(cnt * progr+1));
+              }
+            }
+        }
+        qDebug() <<"files cnt" <<size <<endl;
+        emit resReady(true);
+      }
+      else
+        emit resReady(false);
+      _enState = enIdling;
   }
-  else
-    emit resReady(false);
 }
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -187,22 +192,43 @@ void MainWindow::vViewImage()
 
 void MainWindow::on_pbRecognize_clicked()
 {
-    vViewImage();
+  _strPathTemp=QFileDialog::getOpenFileName(this, tr("Open File"),"/Img/Etalone",tr("Image files(*.*)"));
+  if(!_strPathTemp.isEmpty())
+  {
+      QImage image(_strPathTemp);
+      image = image.scaled(32,32);
+      _lblImage.setPixmap(QPixmap::fromImage(image));
+      _lblImage.show();
+
     int count=0;
     pict = QImage(_strPathTemp).scaled(ciWidth, ciHeight);
     for(unsigned char sign = chSignStart ; sign<= chSignFinish ;sign++)
     {
         fromPinkyToBrain[count]->setImageRef(pict);
         emit brain[count]->operateRecogn();
-        /*if(fromPinkyToBrain[count]->checkValidSigm())   //check this
-            qDebug()<<"Это значение похоже на:"<<static_cast<char>(sign)<<endl;*/
         count++;
     }
-    //_strPathTemp=nullptr;
+  }
+  _strPathTemp="";
 }
 
 void MainWindow::on_pbTeach_clicked()
 {
+    bool bRunningThreadNOTDetected(true);
+
+    if(zipper->getZipperState())
+       bRunningThreadNOTDetected = false;
+    for(int i=0; i< ciCountRepeats && bRunningThreadNOTDetected; ++i){
+        if(fromPinkyToBrain[i]->getNeironState()!=enIdling)
+            bRunningThreadNOTDetected = false;
+    }
+    if(!bRunningThreadNOTDetected){
+        QMessageBox::warning(this, tr("Ошибка"),
+                                         tr("Обучение уже запущено!\n"),
+                                         QMessageBox::Ok );
+        return;
+    }
+
     _iGoodTry =0 ;
     _iNDSTry = 0;
     _iDollarTry = 0;
@@ -224,11 +250,6 @@ void MainWindow::on_pbTeach_clicked()
       }
       ui->lePath->setText(path);
     }
-
-     /*   QStringList filters;
-        filters << "*.png" << "*.jpg" << "*.bmp";
-        dataDir.setNameFilters(filters);
-         _listPathFiles.clear();*/
         char upLimitSign( chSignFinish ), downLimitSign( chSignStart );
         if(ui->chbStudyNeiron->isChecked()){
           _upLimitNeiron =   ui->cbNeiron->currentText().toStdString().c_str()[0];
@@ -249,32 +270,6 @@ void MainWindow::on_pbTeach_clicked()
         zipper->setPath(dataDir.absolutePath());
         emit sigZipFile(upLimitSign, downLimitSign);
         qDebug() <<"Zip called" << endl;
-    /*    #pragma omp parallel for
-        for(int signn = downLimitSign; signn <= upLimitSign; signn++)       //full list of files
-        {
-            QDir dir(dataDir);
-            if(dir.cd(path+'/'+signn)){
-              foreach (QString fileinf, dir.entryList(QDir::Files)) {
-                       _listPathFiles << studyData(signn, dir.absoluteFilePath(fileinf));
-              }
-
-            }
-        }*/
-        /////////////
-       /* int cnt(_listPathFiles.size());
-        ui->pbPicts->setMaximum(cnt);
-        ui->pbStudy_Rec->setMaximum(cnt);
-        ui->pbPicts->setValue(0);
-        ui->pbStudy_Rec->setValue(0);
-        QTime time(QTime::currentTime());
-        qDebug() <<"Start: "<< time.toString()<<endl;
-
-          for(sign = downLimitNeiron; sign<=upLimitNeiron; sign++)      //study
-          {
-              int currentSign = sign - chSignStart;
-              fromPinkyToBrain[currentSign]->setStudyDataPtr(&_listPathFiles);
-              emit brain[currentSign]->operateStudy(ui->spbRounds->value());
-        }*/
 }
 
 void MainWindow::on_pbSave_clicked()

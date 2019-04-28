@@ -9,6 +9,7 @@
 #include <QTimer>
 #include <QThread>
 #include "MarkConst.h"
+#include <QDebug>
 
 namespace Ui {
 class MainWindow;
@@ -19,17 +20,19 @@ class ZipPicture : public QObject
   Q_OBJECT
   QString _strWorkDirectoryPath;
   dataPtr _pDataList;
-
+  enThreadStates _enState;
 public:
   ZipPicture(QObject * parent = nullptr):
     QObject(parent),
     _strWorkDirectoryPath(""),
-    _pDataList(nullptr)
+    _pDataList(nullptr),
+    _enState(enIdling)
   {;}
 
-  void setPath(const QString &path) { _strWorkDirectoryPath = path ; }
-  void setStudyDataPtr(const dataPtr ptr) { _pDataList = ptr; }
+  void setPath(const QString &path) { if(_enState ==enIdling) _strWorkDirectoryPath = path ; }
+  void setStudyDataPtr(const dataPtr ptr) { if(_enState ==enIdling) _pDataList = ptr; }
   dataPtr getPreparedData()const { return _pDataList;}
+  enThreadStates getZipperState() const {return _enState; }
 public slots:
   void sltMakeData(char, char);
 signals:
@@ -54,8 +57,18 @@ signals:
          connect(this, &Controller::operateStudy, worker, &neuron::doStudy);
          connect(this, &Controller::operateRecogn, worker, &neuron::doRecogn);
          connect(worker, &neuron::resultReady, this, &Controller::handleResults);
-         connect(worker, &neuron::resultStoped, this, &Controller::stoppedHandle);
+         connect(worker, &neuron::resultStopped, this, &Controller::stoppedHandle);
          connect(worker, &neuron::recognReady, this, &Controller::sltResultsRecogn);
+         connect(worker, &neuron::threadIsStopping,
+                 [&](int reason)
+                    {
+                        if(reason == enWorked)
+                            qDebug() << tr("Поток ")<< worker->getNeuronSign()
+                                   <<tr("работает. Подождите его полной остановки.") ;
+                        else
+                            qDebug() << tr("Поток ")<< worker->getNeuronSign()
+                                   <<tr("останавливается. Подождите его полной остановки.") ;
+                    });
          workerThread.start();
          workerThread.setPriority(QThread::LowestPriority);
      }
@@ -64,6 +77,7 @@ signals:
          workerThread.quit();
          workerThread.wait();
      }
+
  public slots:
      void handleResults();
      void stoppedHandle();

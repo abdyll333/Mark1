@@ -9,8 +9,15 @@ const QChar chFinish='z';
 const char chSignStart=chStart.toLatin1();
 const char chSignFinish=chFinish.toLatin1();
 const int ciCountRepeats = chFinish.unicode() - chStart.unicode();
-const int ciWidth = 128;
-const int ciHeight = 128;
+const int ciWidth = 32;
+const int ciHeight = 32;
+
+enum enThreadStates{
+  enIdling = 0,  //холостой ход
+  enWorked,
+  enStopped,
+  enAllStates
+};
 
 struct studyData
 {

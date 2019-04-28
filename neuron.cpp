@@ -19,11 +19,9 @@ neuron::neuron(char sign, QObject *parent):
   _iGood(0),
   _iNDS(0),
   _iDollar(0),
-  //_bSignCanCalc(true),
-  _bDataBusy(false),
   _bStudied(false),
-  _bStopped(false),
-  _opImage(nullptr)
+  _opImage(nullptr),
+  _enState(enIdling)
 {
     int nProcs=omp_get_max_threads();
     omp_set_num_threads(nProcs);
@@ -129,7 +127,6 @@ void neuron::study(char sign)
     else
     {
        ++_iGood;
-      // _bStudied = true ;
     }
 }
 
@@ -155,7 +152,7 @@ bool neuron::savePictToFile(QString  path)
     for( i = 0; i < ciWidth; ++i)
       for( j = 0; j <  ciHeight; ++j)
     {
-        int clr = 255 -  _iVectWeight[ j * ciWidth + i ] * 255.0 / max;
+        int clr = static_cast<int>(255 -  _iVectWeight[ j * ciWidth + i ] * 255.0 / max);
         if(clr>255)
             clr=255;
         image->setPixel(i ,j ,QColor(clr,clr,clr).rgb());
@@ -216,51 +213,41 @@ void neuron::loadWeightsFile()
 
 void neuron::doStudy(const int roundCnt)
 {
+  if(_enState != enIdling){   //проверка на то, занят ли поток или в процессе остановки
+     emit threadIsStopping(static_cast<int>(_enState));
+     return;
+  }
+  else
+     _enState = enWorked;    // если все ок, то арбайтен
+
   _iGood = _iNDS = _iDollar = 0;
-  _bDataBusy = true;
-  //qDebug() << neuronSign << " got it"<<endl;
   if(_pStudyData){
    int i,j, fileCnt(_pStudyData->count());
-   for(i = 0;( i < roundCnt /*|| !_bStudied*/ ) && (!_bStopped); ++i){
+   //QString printInfo("Neiron %1 { Good: %2 ;   No itself symb(err): %3 ;   Itself symb(err): %4   }");
+   for(i = 0;( i < roundCnt /*|| !_bStudied*/ ) && (_enState == enWorked); ++i){
       _bStudied = true;
-      for(j = 0; (j < fileCnt ) && (!_bStopped); ++j){
+      for(j = 0; (j < fileCnt ) && (_enState == enWorked); ++j){
           setImageRef(_pStudyData->at(j).image);
           study(_pStudyData->at(j).sign);
       }
-
+   //qDebug()<<printInfo.arg(neuronSign).arg(_iGood,5).arg(_iNDS,5).arg(_iDollar,5)<<endl;
    }
-   _bDataBusy = false;
-   if(_bStopped)
+   if(_enState == enStopped)
    {
-     _bStopped = false;
-     emit resultStoped();
+     _enState = enIdling;
+     emit resultStopped();     //извещение о принудительном завершении
    }
    else
+   {
+       _enState = enIdling;    //арбайтен завершен
        emit resultReady();
+   }
   }
 }
 
- void neuron::studyWithInfo(const int roundCnt)
- {
-   ++_iRunCnt;
-   _bDataBusy = true;
-   if(_pStudyData){
-      int i, j, fileCnt(_pStudyData->count()); QString printInfo("Neiron %1 { Good: %2 ;   No itself symb(err): %3 ;   Itself symb(err): %4   }");
-      for(i = 0; i < roundCnt; ++i)
-      {
-         for(j = 0; j < fileCnt; ++j){
-             setImageRef(_pStudyData->at(j).image);
-             study(_pStudyData->at(j).sign);
-         }
-         qDebug()<<printInfo.arg(neuronSign).arg(_iGood,5).arg(_iNDS,5).arg(_iDollar,5)<<endl;
-      }
-      _bDataBusy = false;
-   }
- }
-
  void neuron::setStudyDataPtr(const dataPtr ptr)
  {
-   if(!_bDataBusy)
+   if(_enState == enIdling)
      _pStudyData = ptr;
  }
 
@@ -273,12 +260,11 @@ void neuron::doStudy(const int roundCnt)
        emit recognReady(true, lSigmActiveLayer);
      else
        emit recognReady(false, lSigmActiveLayer);
-     //emit recognReady(checkValidSigm());
-
  }
 
  void neuron::stopCalc()
  {
-   _bStopped = true;
+   if(_enState == enWorked)
+   _enState = enStopped;
  }
 
