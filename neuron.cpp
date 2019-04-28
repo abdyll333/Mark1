@@ -33,9 +33,8 @@ neuron::neuron(char sign, QObject *parent):
 neuron::~neuron()
 {
   _ucVectSensors.clear();
-   _iVectWeight.clear();
-   if(_opImage)
-     delete _opImage;
+  _iVectWeight.clear();
+  //qDebug() << neuronSign <<" BCE (";
 }
 
 bool neuron::checkValidSigm()
@@ -219,30 +218,42 @@ void neuron::doStudy(const int roundCnt)
   }
   else
      _enState = enWorked;    // если все ок, то арбайтен
+ // qDebug() << neuronSign <<" got it"<< endl;
 
   _iGood = _iNDS = _iDollar = 0;
-  if(_pStudyData){
-   int i,j, fileCnt(_pStudyData->count());
-   //QString printInfo("Neiron %1 { Good: %2 ;   No itself symb(err): %3 ;   Itself symb(err): %4   }");
-   for(i = 0;( i < roundCnt /*|| !_bStudied*/ ) && (_enState == enWorked); ++i){
-      _bStudied = true;
-      for(j = 0; (j < fileCnt ) && (_enState == enWorked); ++j){
-          setImageRef(_pStudyData->at(j).image);
-          study(_pStudyData->at(j).sign);
+  try {
+      if(_pStudyData){
+       int i,j, fileCnt(_pStudyData->count());
+      // QString printInfo("Neiron %1 { Good: %2 ;   No itself symb(err): %3 ;   Itself symb(err): %4   }");
+       for(i = 0;( i < roundCnt /*|| !_bStudied*/ ) && (_enState == enWorked); ++i){
+          _bStudied = true;
+          for(j = 0; (j < fileCnt ) && (_enState == enWorked); ++j){
+              setImageRef(_pStudyData->at(j).image);
+              study(_pStudyData->at(j).sign);
+          }
+     //  qDebug()<<printInfo.arg(neuronSign).arg(_iGood,5).arg(_iNDS,5).arg(_iDollar,5)<<endl;
+       }
+       if(_enState == enStopped)
+       {
+         _enState = enIdling;
+         emit resultStopped();     //извещение о принудительном завершении
+       }
+       else
+       {
+           _enState = enIdling;    //арбайтен завершен
+           emit resultReady();
+       }
       }
-   //qDebug()<<printInfo.arg(neuronSign).arg(_iGood,5).arg(_iNDS,5).arg(_iDollar,5)<<endl;
-   }
-   if(_enState == enStopped)
-   {
-     _enState = enIdling;
-     emit resultStopped();     //извещение о принудительном завершении
-   }
-   else
-   {
-       _enState = enIdling;    //арбайтен завершен
-       emit resultReady();
-   }
+      else {
+          _enState = enIdling;
+          emit resultStopped();
+      }
+  } catch (...) {
+      qDebug() << neuronSign << "error during calc"<<endl;
+      _enState = enIdling;
+      emit resultStopped();
   }
+
 }
 
  void neuron::setStudyDataPtr(const dataPtr ptr)

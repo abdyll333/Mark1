@@ -9,8 +9,8 @@ const QChar chFinish='z';
 const char chSignStart=chStart.toLatin1();
 const char chSignFinish=chFinish.toLatin1();
 const int ciCountRepeats = chFinish.unicode() - chStart.unicode();
-const int ciWidth = 32;
-const int ciHeight = 32;
+const int ciWidth = 128;
+const int ciHeight = 128;
 
 enum enThreadStates{
   enIdling = 0,  //холостой ход
@@ -30,6 +30,12 @@ struct studyData
   {
     image = QImage(path).scaled(ciWidth,ciHeight) ;
   }
+
+  studyData(char sn, QString path, QImage& img):
+    sign(sn),
+    fileName(path),
+    image(img.scaled(ciWidth,ciHeight))
+  {;}
   studyData():
     sign(0),
     fileName("")
@@ -37,10 +43,9 @@ struct studyData
   }
 };
 
-Q_DECLARE_METATYPE(studyData)
+typedef  QList<studyData> dataVec;
+Q_DECLARE_METATYPE(dataVec)
 
-typedef  QList<studyData> data;
-Q_DECLARE_METATYPE(data)
 typedef  QList<studyData>* dataPtr;
 Q_DECLARE_METATYPE(dataPtr)
 

@@ -47,16 +47,16 @@ void ZipPicture::sltMakeData(char signUp, char signDown) //todo чекать к�
       QDir dataDir(_strWorkDirectoryPath);
       QStringList filters;
       filters << "*.png" << "*.jpg" << "*.bmp";
-      dataDir.setNameFilters(filters);
       if(_pDataList && !_strWorkDirectoryPath.isEmpty())
       {
        _pDataList->clear();
        int cnt(0), size(0);
-    
-        #pragma omp parallel for
+
+       // #pragma omp parallel for
         for(char sign = signDown; sign <= signUp; sign++)       //full list of files
         {
             QDir dir(dataDir);
+            dir.setNameFilters(filters);
             if(dir.cd(_strWorkDirectoryPath+'/'+sign)){
               size += dir.entryList(QDir::Files).size()  ;
             }
@@ -64,19 +64,31 @@ void ZipPicture::sltMakeData(char signUp, char signDown) //todo чекать к�
 
        float progr(100.f / size);
     
-        #pragma omp parallel for
+        long iFullSize(0);
+
+      //  #pragma omp parallel for
         for(char sign = signDown; sign <= signUp; sign++)       //full list of files
         {
             QDir dir(dataDir);
+            QImage oQImage;
+            QString path("");
+            dir.setNameFilters(filters);
             if(dir.cd(_strWorkDirectoryPath+'/'+sign)){
-              foreach (QString fileinf, dir.entryList(QDir::Files)) {
-                       _pDataList->append( studyData (sign, dir.absoluteFilePath(fileinf) ) );
-                       ++cnt;
-                   emit  updateProgress(static_cast<int>(cnt * progr+1));
+
+              QStringList lst(dir.entryList(QDir::Files));
+              foreach (QString fileinf, lst) {
+                  path = dir.absoluteFilePath(fileinf);
+                  if(oQImage.load(path)){
+                  //  studyData item(sign, path, image);
+                    _pDataList->append( studyData(sign, path, oQImage) );
+                    iFullSize += oQImage.sizeInBytes();
+                    ++cnt;
+                  }
+                  emit  updateProgress(static_cast<int>(cnt * progr+1));
               }
             }
         }
-        qDebug() <<"files cnt" <<size <<endl;
+        qDebug() <<"files cnt" <<size << "size of images:"<< iFullSize << _pDataList->size() <<" "<< cnt <<endl;
         emit resReady(true);
       }
       else
@@ -88,6 +100,8 @@ void ZipPicture::sltMakeData(char signUp, char signDown) //todo чекать к�
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
+    _pFullDataList(new QList<studyData>),
+    _iCalcReady(0),
     _iGoodTry(0),
     _iNDSTry(0),
     _iDollarTry(0),
@@ -104,6 +118,9 @@ MainWindow::MainWindow(QWidget *parent) :
   connect(this, &MainWindow::sigZipFile, zipper, &ZipPicture::sltMakeData);
   connect(zipper, &ZipPicture::resReady, this, &MainWindow::sltTeaching);
   connect(zipper, &ZipPicture::updateProgress, this, &MainWindow::sltUpdateZip);
+
+  //connect(this, &MainWindow::)
+
   zipThread.start();
   zipThread.setPriority(QThread::LowPriority);
 
@@ -156,6 +173,8 @@ MainWindow::~MainWindow()
   fromPinkyToBrain.clear();
   zipThread.quit();
   zipThread.wait();
+  _pFullDataList->clear();
+  delete _pFullDataList;
   delete ui;
 }
 
@@ -173,6 +192,8 @@ void MainWindow::setInitNetValue()
         brain.push_back(new Controller(fromPinkyToBrain[count],sign));
 
         connect(this, &MainWindow::sigStopCalc, brain[ count ], &Controller::stopE);
+        connect(fromPinkyToBrain[count], &neuron::resultReady, this, &MainWindow::sltAccumRes);
+        connect(fromPinkyToBrain[count], &neuron::resultStopped, this, &MainWindow::sltAccumRes);
         count++;
     }
 
@@ -228,7 +249,7 @@ void MainWindow::on_pbTeach_clicked()
                                          QMessageBox::Ok );
         return;
     }
-
+    _iCalcReady = 0;
     _iGoodTry =0 ;
     _iNDSTry = 0;
     _iDollarTry = 0;
@@ -266,7 +287,7 @@ void MainWindow::on_pbTeach_clicked()
         }
 
         ui->pbPicts->setValue(0);
-        zipper->setStudyDataPtr(&_listPathFiles);
+        zipper->setStudyDataPtr(_pFullDataList);
         zipper->setPath(dataDir.absolutePath());
         emit sigZipFile(upLimitSign, downLimitSign);
         qDebug() <<"Zip called" << endl;
@@ -327,16 +348,16 @@ void MainWindow::sltTeaching(bool correct)
   if(correct)
   {
     char sign;
-    int cnt(_listPathFiles.size());
+    int cnt(_pFullDataList->size());
     ui->pbStudy_Rec->setMaximum(cnt);
     ui->pbStudy_Rec->setValue(0);
     QTime time(QTime::currentTime());
     qDebug() <<"Start: "<< time.toString()<<endl;
 
-      for(sign = _downLimitNeiron; sign<=_upLimitNeiron; sign++)      //study
-      {
+    for(sign = _downLimitNeiron; sign<=_upLimitNeiron; sign++)      //study
+    {
           int currentSign = sign - chSignStart;
-          fromPinkyToBrain[currentSign]->setStudyDataPtr(&_listPathFiles);
+          fromPinkyToBrain[currentSign]->setStudyDataPtr(_pFullDataList);
           emit brain[currentSign]->operateStudy(ui->spbRounds->value());
     }
   }
@@ -350,4 +371,26 @@ void MainWindow::sltUpdateZip(int pr)
 {
   if(pr)
     ui->pbPicts->setValue(pr);
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    /*QSettings settings("MyCompany", "MyApp");
+    settings.setValue("geometry", saveGeometry());
+    settings.setValue("windowState", saveState());*/
+  /*  foreach(Controller*t,brain)
+        t->stopE();*/
+    QMainWindow::closeEvent(event);
+}
+
+void MainWindow::sltAccumRes()
+{
+    ++_iCalcReady;
+    if(_iCalcReady == ciCountRepeats)
+    {
+        _iCalcReady = 0;
+        QMessageBox::information(this, tr("Оповещение"),
+                                         tr("Обучение завершено!\n"),
+                                         QMessageBox::Ok );
+    }
 }

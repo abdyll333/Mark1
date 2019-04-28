@@ -74,6 +74,7 @@ signals:
      }
 
      ~Controller() {
+         worker->stopCalc();
          workerThread.quit();
          workerThread.wait();
      }
@@ -116,14 +117,17 @@ private slots:
 
     void sltUpdateZip(int);
 
+    void sltAccumRes();
+
 
 private:
     Ui::MainWindow *ui;
     QString _strPathTemp;
     QVector <neuron *> fromPinkyToBrain;
     QVector <Controller *> brain;
-    QList<studyData> _listPathFiles;
+    dataPtr _pFullDataList;
     QLabel _lblImage;
+    int _iCalcReady;
     int _iGoodTry;
     int _iNDSTry;
     int _iDollarTry;
@@ -137,6 +141,7 @@ private:
     void setInitNetValue();
     void vViewImage();
     void vSave(char sign, QString , QString );
+    void closeEvent(QCloseEvent *);
 
 signals:
     void sigUpdtGood();
