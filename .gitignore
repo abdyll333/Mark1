@@ -2,7 +2,5 @@
 debug/**
 ui_*
 moc_*
-Makefile.Debug
-Makefile.Release
-Makefile
+Makefile*
 Mark_1.pro.us*
