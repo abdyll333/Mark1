@@ -100,6 +100,7 @@ MainWindow::MainWindow(QWidget *parent) :
   connect(zipper, &ZipPicture::resReady, this, &MainWindow::sltTeaching);
   connect(zipper, &ZipPicture::updateProgress, this, &MainWindow::sltUpdateZip);
   zipThread.start();
+  zipThread.setPriority(QThread::LowPriority);
 
     qDebug()<<omp_get_max_threads()<<endl;
     int nProcs=omp_get_max_threads();
@@ -178,7 +179,7 @@ void MainWindow::vViewImage()
   if(!_strPathTemp.isEmpty())
   {
     QImage image(_strPathTemp);
-    image = image.scaled(128,128);
+    image = image.scaled(32,32);
     _lblImage.setPixmap(QPixmap::fromImage(image));
     _lblImage.show();
   }

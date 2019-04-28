@@ -57,6 +57,7 @@ signals:
          connect(worker, &neuron::resultStoped, this, &Controller::stoppedHandle);
          connect(worker, &neuron::recognReady, this, &Controller::sltResultsRecogn);
          workerThread.start();
+         workerThread.setPriority(QThread::LowestPriority);
      }
 
      ~Controller() {

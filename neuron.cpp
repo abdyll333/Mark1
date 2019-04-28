@@ -9,7 +9,7 @@
 #include <QFile>
 #include <MarkConst.h>
 
-const long clThreshold = 20000;     //Ïîðîã ïðåâûøåíèÿ R ôóíêöèè íåéðîíà
+const long clThreshold = 20000000;     //ÐŸÐ¾Ñ€Ð¾Ð³ Ð¿Ñ€ÐµÐ²Ñ‹ÑˆÐµÐ½Ð¸Ñ R Ñ„ÑƒÐ½ÐºÑ†Ð¸Ð¸ Ð½ÐµÐ¹Ñ€Ð¾Ð½Ð°
 
 neuron::neuron(char sign, QObject *parent):
   QObject(parent),
@@ -45,11 +45,11 @@ bool neuron::checkValidSigm()
     long lSigmActiveLayer = calcTresholdValue();
     if(lSigmActiveLayer>=clThreshold)
     {
-        //qDebug()<<"Ýòà áóêâà îïðåäåëåíà êàê "<<neuronSign<<"!"<<endl;
+        //qDebug()<<"Ð­Ñ‚Ð° Ð±ÑƒÐºÐ²Ð° Ð¾Ð¿Ñ€ÐµÐ´ÐµÐ»ÐµÐ½Ð° ÐºÐ°Ðº "<<neuronSign<<"!"<<endl;
         return true;
     }
     else {
-        //qDebug()<<"Ýòà áóêâà íå îïðåäåëåíà êàê "<<neuronSign<<"!"<<endl;
+        //qDebug()<<"Ð­Ñ‚Ð° Ð±ÑƒÐºÐ²Ð° Ð½Ðµ Ð¾Ð¿Ñ€ÐµÐ´ÐµÐ»ÐµÐ½Ð° ÐºÐ°Ðº "<<neuronSign<<"!"<<endl;
     }
     return false;
 }
@@ -203,7 +203,7 @@ void neuron::loadWeightsFile()
           QTextStream in(&file);
           QString line;
           QStringList list;
-          while (!in.atEnd())  //todo  ñòðàííî
+          while (!in.atEnd())  //todo  ÑÑ‚Ñ€Ð°Ð½Ð½Ð¾
           {
               line=in.readAll();
           }
@@ -221,7 +221,7 @@ void neuron::doStudy(const int roundCnt)
   //qDebug() << neuronSign << " got it"<<endl;
   if(_pStudyData){
    int i,j, fileCnt(_pStudyData->count());
-   for(i = 0;( i < roundCnt || !_bStudied ) && (!_bStopped); ++i){
+   for(i = 0;( i < roundCnt /*|| !_bStudied*/ ) && (!_bStopped); ++i){
       _bStudied = true;
       for(j = 0; (j < fileCnt ) && (!_bStopped); ++j){
           setImageRef(_pStudyData->at(j).image);
