@@ -9,8 +9,8 @@ const QChar chFinish='z';
 const char chSignStart=chStart.toLatin1();
 const char chSignFinish=chFinish.toLatin1();
 const int ciCountRepeats = chFinish.unicode() - chStart.unicode();
-const int ciWidth = 32;
-const int ciHeight = 32;
+const int ciWidth = 70;
+const int ciHeight = 70;
 
 struct studyData
 {

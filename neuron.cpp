@@ -9,7 +9,7 @@
 #include <QFile>
 #include <MarkConst.h>
 
-const long clThreshold = 20000000;     //Порог превышения R функции нейрона
+const long clThreshold = 2000;     //Порог превышения R функции нейрона
 
 neuron::neuron(char sign, QObject *parent):
   QObject(parent),
