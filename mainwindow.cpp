@@ -178,7 +178,7 @@ void MainWindow::vViewImage()
   if(!_strPathTemp.isEmpty())
   {
     QImage image(_strPathTemp);
-    image = image.scaled(32,32);
+    image = image.scaled(128,128);
     _lblImage.setPixmap(QPixmap::fromImage(image));
     _lblImage.show();
   }
